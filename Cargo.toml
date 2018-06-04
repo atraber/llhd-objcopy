@@ -1,0 +1,8 @@
+[package]
+name = "llhd-objcopy"
+version = "0.1.0"
+authors = ["Andreas Traber <andytraber@gmail.com>"]
+
+[dependencies]
+llhd = "0.1"
+argparse = "0.2.1"

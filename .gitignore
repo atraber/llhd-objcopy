@@ -1,0 +1,4 @@
+.lvimrc
+/Cargo.lock
+/target
+**/*.rs.bk
