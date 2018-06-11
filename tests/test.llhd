@@ -3,6 +3,6 @@ entity %bar (i32 %0) (i32 %1) {
     %y = add i32 %0 42
 }
 
-entity @foo (i32 %0) (i32 %1) {
+entity @foo (i32 %0, i32 %2) (i32 %1) {
     %i_bar = inst %bar (%0) (%1)
 }

@@ -21,13 +21,35 @@ pub struct Assign {
 }
 
 pub struct Instance {
-	name: String,
+	inst_name: String,
 	module: Rc<Module>,
 }
 
+impl Instance {
+	pub fn new(inst_name : String, m : Rc<Module>) -> Instance {
+		Instance {
+			inst_name: inst_name,
+			module: m,
+		}
+	}
+}
+
 pub struct Module {
-	ports: Vec<Port>,
-	wires: Vec<Rc<Wire>>,
-	assigns: Vec<Assign>,
-	instances: Vec<Instance>,
+	pub name: String,
+	pub ports: Vec<Port>,
+	pub wires: Vec<Rc<Wire>>,
+	pub assigns: Vec<Assign>,
+	pub instances: Vec<Instance>,
+}
+
+impl Module {
+	pub fn new(name: String) -> Module {
+		Module {
+			name: name,
+			ports: vec![],
+			wires: vec![],
+			assigns: vec![],
+			instances: vec![],
+		}
+	}
 }
