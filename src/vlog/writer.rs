@@ -40,7 +40,7 @@ impl VlogWriter {
 
 		self.modules.push(m);
 
-		let mut m = self.modules.get_mut(id).unwrap();
+		let m = self.modules.get_mut(id).unwrap();
 		m.id = id;
 		return ModuleRef::new(m);
 	}
@@ -89,11 +89,13 @@ impl VlogWriter {
 		let name = arg.name().unwrap();
 		let ty = VlogWriter::process_type(&arg.ty());
 		let w_ref = m.wire_push(Wire::new(name.to_string(), ty));
-		m.port_push(Port::new(w_ref, port_ty));
+		let p_ref = m.port_push(Port::new(w_ref.clone(), port_ty));
+		let wire = m.wire_mut(&w_ref).unwrap();
+		wire.port_push(p_ref);
 	}
 
 	fn process_entity_arguments(&mut self, entity: &llhd::Entity, m_ref: &ModuleRef) -> () {
-		let mut m = self.module_mut(&m_ref).unwrap();
+		let m = self.module_mut(&m_ref).unwrap();
 		for arg in entity.inputs() {
 			VlogWriter::process_entity_argument(m, arg, PortType::Input);
 		}
@@ -220,10 +222,35 @@ impl VlogWriter {
 		write!(file, "{}\n", ports);
 	}
 
+	fn write_inouts(&self, mut file : &File, m : &Module) {
+		for port in &m.ports {
+			if port.port_ty == PortType::Input {
+				write!(file, "  input  {};\n", m.wire(&port.wire).unwrap().name);
+			} else if port.port_ty == PortType::Output {
+				write!(file, "  output {};\n", m.wire(&port.wire).unwrap().name);
+
+	 		} else {
+				panic!("Unreachable!");
+			}
+		}
+
+		if !m.ports.is_empty() {
+			write!(file, "\n");
+		}
+	}
+
 	fn write_wires(&self, mut file : &File, m : &Module) {
+		let mut empty = true;
 		for wire in &m.wires {
 			// TODO: vector dimensions are missing
-			write!(file, "  wire {};\n", wire.name);
+			if wire.ports.is_empty() {
+				write!(file, "  wire {};\n", wire.name);
+				empty = false;
+			}
+		}
+
+		if !empty {
+			write!(file, "\n");
 		}
 	}
 
@@ -244,6 +271,10 @@ impl VlogWriter {
 			write!(file, "{}\n", ports);
 
 			write!(file, "  );\n");
+		}
+
+		if !m.instances.is_empty() {
+			write!(file, "\n");
 		}
 	}
 
@@ -268,16 +299,14 @@ impl VlogWriter {
 			if m.ports.len() > 0 {
 				write!(file, "module {}(\n", m.name);
 				self.write_ports(&file, m);
-				write!(file, "  );\n");
+				write!(file, "  );\n\n");
 			} else {
-				write!(file, "module {};\n", m.name);
+				write!(file, "module {};\n\n", m.name);
 			}
 
-			write!(file, "\n");
+			self.write_inouts(&file, m);
 			self.write_wires(&file, m);
-			write!(file, "\n");
 			self.write_instances(&file, m);
-			write!(file, "\n");
 			self.write_assigns(&file, m);
 			write!(file, "endmodule\n\n");
 		}

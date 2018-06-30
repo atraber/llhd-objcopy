@@ -1,10 +1,11 @@
 use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum PortType {
 	Input,
 	Output,
-	InOut,
+	// InOut is never used so far, although allowed in Verilog
+	// InOut,
 }
 
 pub type Type = Rc<TypeKind>;
@@ -50,6 +51,7 @@ pub struct Wire {
 	id: usize,
 	pub name: String,
 	pub ty: Type,
+	pub ports: Vec<PortRef>,
 }
 
 impl Wire {
@@ -58,11 +60,16 @@ impl Wire {
 			id: 0, // TODO: Nope! Not the right way!
 			name: name,
 			ty: ty,
+			ports: vec![],
 		}
+	}
+
+	pub fn port_push(&mut self, p_ref: PortRef) -> () {
+		self.ports.push(p_ref);
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WireRef {
 	id: usize,
 }
@@ -71,12 +78,6 @@ impl WireRef {
 	pub fn new(w : &Wire) -> WireRef {
 		WireRef {
 			id: w.id,
-		}
-	}
-
-	pub fn from_id(id: usize) -> WireRef {
-		WireRef {
-			id: id,
 		}
 	}
 }
@@ -223,6 +224,10 @@ impl Module {
 
 	pub fn wire(&self, w_ref : &WireRef) -> Option<&Wire> {
 		self.wires.get(w_ref.id)
+	}
+
+	pub fn wire_mut(&mut self, w_ref : &WireRef) -> Option<&mut Wire> {
+		self.wires.get_mut(w_ref.id)
 	}
 }
 
