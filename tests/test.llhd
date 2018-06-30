@@ -1,10 +1,9 @@
-entity %bar (i32 %0) (i32 %1) {
-    %2 = add i32 %0 9000
-    %y = add i32 %0 42
+entity %bar (i1$ %a) (i1$ %b) {
+    drv %b %a
 }
 
-entity @foo (i32 %0, i32 %2, i1$ %data_i) (i32 %1, i1$ %data_o, i1$ %floating_o) {
-    %i_bar = inst %bar (%0) (%1)
+entity @foo (i1$ %a, i1$ %b, i1$ %data_i) (i1$ %c, i1$ %data_o, i1$ %floating_o) {
+    %i_bar = inst %bar (%a) (%c)
 
     %internal = sig i1$
 
